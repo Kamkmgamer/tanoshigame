@@ -1,14 +1,15 @@
-"use client";
-
+import Image from "next/image";
 import { useState } from "react";
-
 import { api } from "~/trpc/react";
+import { UploadButton } from "~/utils/uploadthing";
 
 export function LatestPost() {
   const [latestPost] = api.post.getLatest.useSuspenseQuery();
 
   const utils = api.useUtils();
   const [name, setName] = useState("");
+  const [image, setImage] = useState("");
+
   const createPost = api.post.create.useMutation({
     onSuccess: async () => {
       await utils.post.invalidate();
@@ -45,6 +46,22 @@ export function LatestPost() {
           {createPost.isPending ? "Submitting..." : "Submit"}
         </button>
       </form>
+      <UploadButton
+        endpoint="imageUploader"
+        onClientUploadComplete={(res) => {
+          // Do something with the response
+          console.log("Files: ", res);
+          const firstFile = res?.[0];
+          if (firstFile) {
+            setImage(firstFile.url);
+          }
+        }}
+        onUploadError={(error: Error) => {
+          // Do something with the error.
+          alert(`ERROR! ${error.message}`);
+        }}
+      />
+      {image && <Image src={image} alt="preview" width={200} height={200} />}
     </div>
   );
 }
