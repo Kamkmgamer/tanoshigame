@@ -208,7 +208,7 @@ export function Game() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [gameState]);
+  }, [gameState, hamsterY]);
 
   const handleStartGame = () => {
     // Initialize sounds
