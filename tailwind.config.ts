@@ -27,6 +27,7 @@ const config: Config = {
         },
         flower: {
           "0%": { transform: "translateY(-150%) rotate(0deg)" },
+          "50%": { transform: "translate(15px, -15%) rotate(15deg)" },
           "100%": { transform: "translateY(120%) rotate(45deg)" },
         }
       },
