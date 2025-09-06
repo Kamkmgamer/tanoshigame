@@ -2,9 +2,7 @@ import { Game } from "~/app/_components/Game";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  if (process.env.NODE_ENV !== "production") {
-    void api.post.getLatest.prefetch();
-  }
+  void api.score.top.prefetch({ limit: 5 });
 
   return (
     <HydrateClient>
