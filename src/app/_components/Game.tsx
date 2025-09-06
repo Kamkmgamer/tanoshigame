@@ -262,7 +262,9 @@ export function Game() {
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     };
 
-    
+    // Kick off the first frame of the game loop
+    animationFrameRef.current = requestAnimationFrame(gameLoop);
+
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
