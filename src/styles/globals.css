@@ -16,3 +16,20 @@ body {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+
+/* Decorative falling flower animation (used site-wide) */
+@keyframes fall-flower {
+  0% {
+    transform: translateX(0) translateY(-120vh) rotate(0deg);
+  }
+  50% {
+    transform: translateX(30px) translateY(-40vh) rotate(15deg);
+  }
+  100% {
+    transform: translateX(-40px) translateY(120vh) rotate(45deg);
+  }
+}
+.fall-flower {
+  animation: fall-flower 18s linear infinite;
+  will-change: transform;
+}

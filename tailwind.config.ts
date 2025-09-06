@@ -26,9 +26,15 @@ const config: Config = {
           to: { transform: "rotate(360deg)" },
         },
         flower: {
-          "0%": { transform: "translateY(-150%) rotate(0deg)" },
-          "50%": { transform: "translate(15px, -15%) rotate(15deg)" },
-          "100%": { transform: "translateY(120%) rotate(45deg)" },
+          "0%": {
+            transform: "translateX(0) translateY(-120vh) rotate(0deg)",
+          },
+          "50%": {
+            transform: "translateX(30px) translateY(-40vh) rotate(15deg)",
+          },
+          "100%": {
+            transform: "translateX(-40px) translateY(120vh) rotate(45deg)",
+          },
         }
       },
       animation: {
