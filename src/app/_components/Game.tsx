@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { api } from "~/trpc/react";
 import { Hamster } from "./Hamster";
 import { Food } from "./Food";
 import { Leaderboard } from "./Leaderboard";
+
+declare global {
+  // Extend window for Safari prefix without using `any`
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
 
 type FallingItem = {
   id: number;
@@ -16,12 +23,13 @@ type FallingItem = {
 
 export function Game() {
   // Game state
-  const [gameState, setGameState] = useState<"idle" | "playing" | "gameOver">("idle");
+  const [gameState, setGameState] = useState<"idle" | "playing" | "paused" | "gameOver">("idle");
   const scoreRef = useRef(0);
   const livesRef = useRef(3);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [playerName, setPlayerName] = useState("");
+  const [soundEnabled, setSoundEnabled] = useState(true);
   
   const [, forceRender] = useState(0);
 
@@ -35,6 +43,8 @@ export function Game() {
   const [hamsterY, setHamsterY] = useState(500);
   const [hamsterDir, setHamsterDir] = useState<"left" | "right" | "none">("none");
   const [fallingItems, setFallingItems] = useState<FallingItem[]>([]);
+  const keysRef = useRef<{ left: boolean; right: boolean }>({ left: false, right: false });
+  const holdDirRef = useRef<"left" | "right" | "none">("none");
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -53,7 +63,7 @@ export function Game() {
 
   // Sync container height & hamster Y once game area is mounted (after start)
   useEffect(() => {
-    if (gameState !== "playing" || !gameAreaRef.current) return;
+    if ((gameState !== "playing" && gameState !== "paused") || !gameAreaRef.current) return;
     const height = gameAreaRef.current.clientHeight;
     containerHeightRef.current = height;
     setHamsterY(height - 120);
@@ -63,12 +73,45 @@ export function Game() {
   const animationFrameRef = useRef<number>(0);
   const lastSpawnTimeRef = useRef<number>(0);
   const itemCounterRef = useRef<number>(0);
+  const lastFrameTimeRef = useRef<number | null>(null);
+  
+  // WebAudio (synth) instead of external mp3s
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const unlockAudio = () => {
+    if (audioCtxRef.current) return;
+    try {
+      // Resolve AudioContext constructor with Safari fallback, avoiding `any`.
+      const AudioCtxCtor: typeof AudioContext | undefined =
+        typeof window !== "undefined"
+          ? window.AudioContext ?? window.webkitAudioContext
+          : undefined;
+      if (AudioCtxCtor) {
+        audioCtxRef.current = new AudioCtxCtor();
+      }
+    } catch {
+      audioCtxRef.current = null;
+    }
+  };
+  const playTone = useCallback((freq: number, durationMs: number, type: OscillatorType = "sine") => {
+    if (!soundEnabled) return;
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.value = 0.001; // start silent to avoid pop
+    osc.connect(gain).connect(ctx.destination);
+    const now = ctx.currentTime;
+    gain.gain.setTargetAtTime(0.05, now, 0.01);
+    osc.start();
+    // quick decay
+    gain.gain.setTargetAtTime(0.0001, now + durationMs / 1000 - 0.05, 0.02);
+    osc.stop(now + durationMs / 1000 + 0.05);
+  }, [soundEnabled]);
   
   // tRPC
   const utils = api.useUtils();
-  // Audio refs
-  const munchSoundRef = useRef<HTMLAudioElement | null>(null);
-  const hurtSoundRef = useRef<HTMLAudioElement | null>(null);
 
   const submitScore = api.score.submit.useMutation({
     onSuccess: () => {
@@ -76,28 +119,25 @@ export function Game() {
     },
   });
 
-  // Handle keyboard input for hamster movement
+  // Handle keyboard input (continuous)
   useEffect(() => {
-    if (gameState !== "playing") return;
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      let moved = false;
-      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-        hamsterXRef.current = Math.max(0, hamsterXRef.current - 20);
-        moved = true;
-      } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-        const gameAreaWidth = gameAreaRef.current ? gameAreaRef.current.clientWidth : 800;
-        hamsterXRef.current = Math.min(gameAreaWidth - 100, hamsterXRef.current + 20);
-        moved = true;
-      }
-      if (moved) {
-        setHamsterDir(e.key === "ArrowLeft" || e.key === "a" || e.key === "A" ? "left" : "right");
-      }
-      setHamsterX(hamsterXRef.current);
+    if (gameState !== "playing" && gameState !== "paused") return;
+    const onDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keysRef.current.left = true;
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keysRef.current.right = true;
+      if (e.key === " " && gameState === "playing") setGameState("paused");
+      else if (e.key === " " && gameState === "paused") setGameState("playing");
     };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    const onUp = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keysRef.current.left = false;
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keysRef.current.right = false;
+    };
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup", onUp);
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup", onUp);
+    };
   }, [gameState]);
 
   // Handle pointer/touch input (mobile + desktop)
@@ -129,12 +169,34 @@ export function Game() {
     if (gameState !== "playing") return;
 
     const gameLoop = (timestamp: number) => {
-      // --- State updates should be based on the previous state ---
+      // Delta time for consistent movement
+      const dtMs = lastFrameTimeRef.current == null ? 16 : Math.min(48, timestamp - lastFrameTimeRef.current);
+      const dt = dtMs / 1000; // seconds
+      lastFrameTimeRef.current = timestamp;
+
+      // Move hamster based on keys/hold direction
+      const areaWidth = gameAreaRef.current ? gameAreaRef.current.clientWidth : 800;
+      const SPEED = Math.max(250, Math.min(700, 350 + scoreRef.current * 10)); // px/sec scales with score
+      const left = keysRef.current.left || holdDirRef.current === "left";
+      const right = keysRef.current.right || holdDirRef.current === "right";
+      if (left && !right) {
+        hamsterXRef.current = Math.max(0, hamsterXRef.current - SPEED * dt);
+        setHamsterDir("left");
+      } else if (right && !left) {
+        hamsterXRef.current = Math.min(areaWidth - 100, hamsterXRef.current + SPEED * dt);
+        setHamsterDir("right");
+      } else {
+        setHamsterDir("none");
+      }
+      setHamsterX(hamsterXRef.current);
+
       setFallingItems((prevItems: FallingItem[]) => {
-        let newItems = prevItems.map((item: FallingItem) => ({
-          ...item,
-          y: item.y + item.speed,
-        })).filter(item => item.y < (containerHeightRef.current || 600));
+        let newItems = prevItems
+          .map((item: FallingItem) => ({
+            ...item,
+            y: item.y + item.speed * dt,
+          }))
+          .filter((item) => item.y < (containerHeightRef.current || 600));
 
         // Collision detection
         const hamsterRect = { x: hamsterXRef.current, y: hamsterY, width: 100, height: 100 };
@@ -151,14 +213,12 @@ export function Game() {
           ) {
             collidedItemIds.add(item.id);
             if (item.type === "food") {
-              munchSoundRef.current?.play().catch((err) => {
-    console.error("Failed to play munch sound", err);
-  });
+              playTone(660, 90, "square");
               scoreRef.current++;
             } else {
-              hurtSoundRef.current?.play().catch((err) => {
-    console.error("Failed to play hurt sound", err);
-  });
+              // quick double beep
+              playTone(180, 60, "sawtooth");
+              setTimeout(() => playTone(140, 80, "sawtooth"), 80);
               livesRef.current--;
             }
           }
@@ -173,19 +233,20 @@ export function Game() {
         }
 
         // Spawn new items
-        // Spawn rate accelerates quickly; min 120ms
-        const spawnInterval = Math.max(120, 600 - scoreRef.current * 15);
+        // Spawn rate accelerates; min 110ms
+        const spawnInterval = Math.max(110, 620 - scoreRef.current * 14);
         if (timestamp - lastSpawnTimeRef.current > spawnInterval) {
           lastSpawnTimeRef.current = timestamp;
           const gameAreaWidth = gameAreaRef.current ? gameAreaRef.current.clientWidth : 800;
-          const itemsToSpawn = 1 + Math.floor(scoreRef.current / 15);
+          const itemsToSpawn = 1 + Math.floor(scoreRef.current / 18);
           for (let i = 0; i < itemsToSpawn; i++) {
             const newItem: FallingItem = {
               id: itemCounterRef.current++,
               x: Math.random() * (gameAreaWidth - 30),
               y: -30,
               type: Math.random() > 0.2 ? "food" : "jalapeno",
-              speed: 2 + Math.random() * 3 + Math.floor(scoreRef.current / 10),
+              // speed in px/sec; scaled by score
+              speed: 140 + Math.random() * 120 + Math.floor(scoreRef.current / 12) * 20,
             };
             newItems.push(newItem);
           }
@@ -208,24 +269,25 @@ export function Game() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [gameState, hamsterY]);
+  }, [gameState, hamsterY, playTone]);
 
   const handleStartGame = () => {
-    // Initialize sounds
-    if (!munchSoundRef.current) {
-      munchSoundRef.current = new Audio("/sounds/munch.mp3");
-      hurtSoundRef.current = new Audio("/sounds/hurt.mp3");
-    }
-
+    // Initialize audio
+    unlockAudio();
     scoreRef.current = 0;
     livesRef.current = 3;
     setScore(0);
     setLives(3);
-    hamsterXRef.current = 370;
-    setHamsterX(370);
+    if (gameAreaRef.current) {
+      hamsterXRef.current = Math.max(0, (gameAreaRef.current.clientWidth - 100) / 2);
+    } else {
+      hamsterXRef.current = 370;
+    }
+    setHamsterX(hamsterXRef.current);
     setFallingItems([]);
     lastSpawnTimeRef.current = 0;
     itemCounterRef.current = 0;
+    lastFrameTimeRef.current = null;
     setGameState("playing");
   };
 
@@ -248,10 +310,25 @@ export function Game() {
       <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Tanoshi Game</h2>
       
       {/* Game stats */}
-      {gameState === "playing" && (
-        <div className="flex justify-between w-full max-w-2xl mb-2">
+      {(gameState === "playing" || gameState === "paused") && (
+        <div className="flex items-center justify-between w-full max-w-2xl mb-2 gap-2">
           <div className="text-xl font-bold">Score: {score}</div>
           <div className="text-xl font-bold">Lives: {lives > 0 ? "❤️".repeat(lives) : ""}</div>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-3 py-1 rounded-full text-sm font-semibold border border-amber-700 bg-amber-100 hover:bg-amber-200"
+              onClick={() => setGameState(gameState === "playing" ? "paused" : "playing")}
+            >
+              {gameState === "playing" ? "Pause" : "Resume"}
+            </button>
+            <button
+              aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
+              className="px-3 py-1 rounded-full text-sm font-semibold border border-emerald-700 bg-emerald-100 hover:bg-emerald-200"
+              onClick={() => setSoundEnabled((s) => !s)}
+            >
+              {soundEnabled ? "🔊" : "🔇"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -259,7 +336,7 @@ export function Game() {
         <div className="flex flex-col items-center">
           <div className="mb-6 text-center">
             <p className="text-lg mb-2">Help the hamster catch food and avoid jalapeños!</p>
-            <p className="text-md mb-4">Use ← → arrow keys or A/D to move</p>
+            <p className="text-md mb-4">Use ← → arrow keys or A/D to move, or drag/tap on mobile</p>
           </div>
           <button
             className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-xl transition duration-300 ease-in-out transform hover:scale-105"
@@ -274,10 +351,10 @@ export function Game() {
         </div>
       )}
 
-      {gameState === "playing" && (
+      {(gameState === "playing" || gameState === "paused") && (
         <div 
           ref={gameAreaRef}
-          className="relative w-full h-[60vh] max-h-[600px] bg-sky-100 border-4 border-amber-800 rounded-lg overflow-hidden"
+          className="relative w-full h-[60vh] max-h-[600px] bg-gradient-to-b from-sky-100 to-sky-200 border-4 border-amber-800 rounded-lg overflow-hidden"
         >
           {/* Ground */}
           <div className="absolute bottom-0 w-full h-20 bg-green-600"></div>
@@ -294,6 +371,35 @@ export function Game() {
               type={item.type} 
             />
           ))}
+
+          {/* Mobile on-screen controls */}
+          {gameState === "playing" && (
+            <div className="absolute bottom-0 left-0 w-full h-20 flex md:hidden select-none">
+              <button
+                className="flex-1 bg-black/10 active:bg-black/20 text-2xl font-bold text-black"
+                onPointerDown={() => (holdDirRef.current = "left")}
+                onPointerUp={() => (holdDirRef.current = "none")}
+                onPointerCancel={() => (holdDirRef.current = "none")}
+                onPointerLeave={() => (holdDirRef.current = "none")}
+              >
+                ◀
+              </button>
+              <button
+                className="flex-1 bg-black/10 active:bg-black/20 text-2xl font-bold text-black"
+                onPointerDown={() => (holdDirRef.current = "right")}
+                onPointerUp={() => (holdDirRef.current = "none")}
+                onPointerCancel={() => (holdDirRef.current = "none")}
+                onPointerLeave={() => (holdDirRef.current = "none")}
+              >
+                ▶
+              </button>
+            </div>
+          )}
+          {gameState === "paused" && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="bg-white rounded-lg px-6 py-4 shadow-xl text-xl font-semibold">Paused</div>
+            </div>
+          )}
         </div>
       )}
 
