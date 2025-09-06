@@ -13,7 +13,7 @@ export const Hamster = ({ x, y, dir = "none" }: HamsterProps) => {
   
   return (
     <div
-      className="absolute animate-wiggle transition-transform"
+      className="absolute animate-wiggle transition-transform z-10"
       style={{
         left: `${x}px`,
         top: `${y}px`,

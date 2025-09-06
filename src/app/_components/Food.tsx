@@ -14,7 +14,7 @@ export const Food = ({ x, y, type }: { x: number; y: number; type: "food" | "jal
 
   return (
     <div
-      className={`absolute pointer-events-none ${animationClass}`}
+      className={`absolute pointer-events-none z-10 ${animationClass}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,

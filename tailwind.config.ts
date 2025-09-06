@@ -25,11 +25,16 @@ const config: Config = {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        flower: {
+          "0%": { transform: "translateY(-150%) rotate(0deg)" },
+          "100%": { transform: "translateY(120%) rotate(45deg)" },
+        }
       },
       animation: {
         wiggle: "wiggle 0.6s ease-in-out infinite",
         float: "float 3s ease-in-out infinite",
         "spin-slow": "spin-slow 8s linear infinite",
+        flower: "flower 18s linear infinite",
       },
     },
   },

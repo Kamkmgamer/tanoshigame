@@ -262,8 +262,7 @@ export function Game() {
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     };
 
-    animationFrameRef.current = requestAnimationFrame(gameLoop);
-
+    
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -351,56 +350,52 @@ export function Game() {
         </div>
       )}
 
-      {(gameState === "playing" || gameState === "paused") && (
-        <div 
-          ref={gameAreaRef}
-          className="relative w-full h-[65vh] sm:h-[70vh] max-h-[650px] bg-gradient-to-b from-sky-200 to-sky-400 border-4 border-amber-800 rounded-3xl overflow-hidden shadow-inner"
-        >
-          {/* Ground */}
-          <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-green-700 to-green-500"></div>
           
-          {/* Hamster */}
-          <Hamster x={hamsterX} y={hamsterY} dir={hamsterDir} />
-          
-          {/* Falling items */}
-          {fallingItems.map(item => (
-            <Food 
-              key={item.id} 
-              x={item.x} 
-              y={item.y} 
-              type={item.type} 
-            />
-          ))}
 
-          {/* Mobile on-screen controls */}
-          {gameState === "playing" && (
-            <div className="absolute bottom-0 left-0 w-full h-20 flex md:hidden select-none">
-              <button
-                className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
-                onPointerDown={() => (holdDirRef.current = "left")}
-                onPointerUp={() => (holdDirRef.current = "none")}
-                onPointerCancel={() => (holdDirRef.current = "none")}
-                onPointerLeave={() => (holdDirRef.current = "none")}
-              >
-                ◀
-              </button>
-              <button
-                className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
-                onPointerDown={() => (holdDirRef.current = "right")}
-                onPointerUp={() => (holdDirRef.current = "none")}
-                onPointerCancel={() => (holdDirRef.current = "none")}
-                onPointerLeave={() => (holdDirRef.current = "none")}
-              >
-                ▶
-              </button>
-            </div>
-          )}
-          {gameState === "paused" && (
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-              <div className="bg-white/70 backdrop-blur-md rounded-2xl px-8 py-6 shadow-2xl text-2xl font-extrabold">Paused</div>
-            </div>
-          )}
-        </div>
+      {(gameState === "playing" || gameState === "paused") && (
+          <div
+            ref={gameAreaRef}
+            className="game-area relative w-full max-w-4xl aspect-video bg-gradient-to-b from-sky-300 to-sky-400 rounded-xl shadow-inner overflow-hidden"
+          >
+                        <Hamster x={hamsterX} y={hamsterY} dir={hamsterDir} />
+            {fallingItems.map((item) => (
+              <Food
+                key={item.id}
+                x={item.x}
+                y={item.y}
+                type={item.type}
+              />
+            ))}
+
+            {/* Mobile on-screen controls */}
+            {gameState === "playing" && (
+              <div className="absolute bottom-0 left-0 w-full h-20 flex md:hidden select-none">
+                <button
+                  className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
+                  onPointerDown={() => (holdDirRef.current = "left")}
+                  onPointerUp={() => (holdDirRef.current = "none")}
+                  onPointerCancel={() => (holdDirRef.current = "none")}
+                  onPointerLeave={() => (holdDirRef.current = "none")}
+                >
+                  ◀
+                </button>
+                <button
+                  className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
+                  onPointerDown={() => (holdDirRef.current = "right")}
+                  onPointerUp={() => (holdDirRef.current = "none")}
+                  onPointerCancel={() => (holdDirRef.current = "none")}
+                  onPointerLeave={() => (holdDirRef.current = "none")}
+                >
+                  ▶
+                </button>
+              </div>
+            )}
+            {gameState === "paused" && (
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                <div className="bg-white/70 backdrop-blur-md rounded-2xl px-8 py-6 shadow-2xl text-2xl font-extrabold">Paused</div>
+              </div>
+            )}
+          </div>
       )}
 
       {gameState === "gameOver" && (

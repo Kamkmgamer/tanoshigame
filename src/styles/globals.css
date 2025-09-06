@@ -10,6 +10,8 @@ body {
   @apply bg-gradient-to-b from-amber-50 via-yellow-100 to-orange-200 font-sans text-gray-800;
 }
 
+
+
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
