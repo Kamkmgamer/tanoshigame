@@ -25,3 +25,19 @@ export const posts = createTable(
   }),
   (t) => [index("name_idx").on(t.name)],
 );
+
+// Scores table for Tanoshi Game leaderboard
+export const scores = createTable(
+  "score",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    playerName: d.varchar({ length: 256 }),
+    score: d.integer().notNull(),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  }),
+  (t) => [index("score_player_idx").on(t.playerName)],
+);
+
