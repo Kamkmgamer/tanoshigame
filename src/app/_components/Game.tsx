@@ -358,7 +358,7 @@ export function Game() {
       {(gameState === "playing" || gameState === "paused") && (
           <div
             ref={gameAreaRef}
-            className="game-area relative w-full max-w-4xl aspect-video bg-gradient-to-b from-sky-300 to-sky-400 rounded-xl shadow-inner overflow-hidden"
+            className="game-area relative w-full max-w-4xl aspect-[3/4] sm:aspect-video bg-gradient-to-b from-sky-300 to-sky-400 rounded-xl shadow-inner overflow-hidden"
           >
                         <Hamster x={hamsterX} y={hamsterY} dir={hamsterDir} />
             {fallingItems.map((item) => (
