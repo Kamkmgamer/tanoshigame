@@ -1,6 +1,8 @@
 import { Game } from "~/app/_components/Game";
 import { api, HydrateClient } from "~/trpc/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   void api.score.top.prefetch({ limit: 5 });
 
