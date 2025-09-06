@@ -306,24 +306,24 @@ export function Game() {
   };
 
   return (
-    <div className="flex flex-col items-center p-4 bg-[#f9ffd9] rounded-lg shadow-lg w-full max-w-4xl">
-      <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Tanoshi Game</h2>
+    <div className="flex flex-col items-center p-6 bg-white/50 backdrop-blur-md rounded-3xl shadow-2xl ring-1 ring-black/10 w-full max-w-4xl">
+      <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-amber-700 drop-shadow-lg tracking-wide">Tanoshi Game</h2>
       
       {/* Game stats */}
       {(gameState === "playing" || gameState === "paused") && (
-        <div className="flex items-center justify-between w-full max-w-2xl mb-2 gap-2">
-          <div className="text-xl font-bold">Score: {score}</div>
-          <div className="text-xl font-bold">Lives: {lives > 0 ? "❤️".repeat(lives) : ""}</div>
+        <div className="flex items-center justify-between w-full max-w-2xl mb-4 gap-3 bg-white/40 backdrop-blur-sm px-4 py-2 rounded-full shadow">
+          <div className="text-2xl font-extrabold text-emerald-800">🍪 {score}</div>
+          <div className="text-2xl font-extrabold text-red-600">{lives > 0 ? "❤️".repeat(lives) : "💔"}</div>
           <div className="flex items-center gap-2">
             <button
-              className="px-3 py-1 rounded-full text-sm font-semibold border border-amber-700 bg-amber-100 hover:bg-amber-200"
+              className="px-4 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow hover:from-amber-600 hover:to-amber-700 transition"
               onClick={() => setGameState(gameState === "playing" ? "paused" : "playing")}
             >
               {gameState === "playing" ? "Pause" : "Resume"}
             </button>
             <button
               aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
-              className="px-3 py-1 rounded-full text-sm font-semibold border border-emerald-700 bg-emerald-100 hover:bg-emerald-200"
+              className="px-4 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow hover:from-emerald-600 hover:to-emerald-700 transition"
               onClick={() => setSoundEnabled((s) => !s)}
             >
               {soundEnabled ? "🔊" : "🔇"}
@@ -339,7 +339,7 @@ export function Game() {
             <p className="text-md mb-4">Use ← → arrow keys or A/D to move, or drag/tap on mobile</p>
           </div>
           <button
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-xl transition duration-300 ease-in-out transform hover:scale-105"
+            className="bg-gradient-to-r from-emerald-400 to-emerald-600 hover:to-emerald-700 text-white font-bold py-4 px-10 rounded-full text-2xl shadow-lg transform transition hover:scale-110"
             onClick={handleStartGame}
           >
             Start Game
@@ -354,10 +354,10 @@ export function Game() {
       {(gameState === "playing" || gameState === "paused") && (
         <div 
           ref={gameAreaRef}
-          className="relative w-full h-[60vh] max-h-[600px] bg-gradient-to-b from-sky-100 to-sky-200 border-4 border-amber-800 rounded-lg overflow-hidden"
+          className="relative w-full h-[65vh] sm:h-[70vh] max-h-[650px] bg-gradient-to-b from-sky-200 to-sky-400 border-4 border-amber-800 rounded-3xl overflow-hidden shadow-inner"
         >
           {/* Ground */}
-          <div className="absolute bottom-0 w-full h-20 bg-green-600"></div>
+          <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-green-700 to-green-500"></div>
           
           {/* Hamster */}
           <Hamster x={hamsterX} y={hamsterY} dir={hamsterDir} />
@@ -376,7 +376,7 @@ export function Game() {
           {gameState === "playing" && (
             <div className="absolute bottom-0 left-0 w-full h-20 flex md:hidden select-none">
               <button
-                className="flex-1 bg-black/10 active:bg-black/20 text-2xl font-bold text-black"
+                className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
                 onPointerDown={() => (holdDirRef.current = "left")}
                 onPointerUp={() => (holdDirRef.current = "none")}
                 onPointerCancel={() => (holdDirRef.current = "none")}
@@ -385,7 +385,7 @@ export function Game() {
                 ◀
               </button>
               <button
-                className="flex-1 bg-black/10 active:bg-black/20 text-2xl font-bold text-black"
+                className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
                 onPointerDown={() => (holdDirRef.current = "right")}
                 onPointerUp={() => (holdDirRef.current = "none")}
                 onPointerCancel={() => (holdDirRef.current = "none")}
@@ -396,8 +396,8 @@ export function Game() {
             </div>
           )}
           {gameState === "paused" && (
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="bg-white rounded-lg px-6 py-4 shadow-xl text-xl font-semibold">Paused</div>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+              <div className="bg-white/70 backdrop-blur-md rounded-2xl px-8 py-6 shadow-2xl text-2xl font-extrabold">Paused</div>
             </div>
           )}
         </div>

@@ -10,9 +10,11 @@ export const Food = ({ x, y, type }: { x: number; y: number; type: "food" | "jal
   const width = type === "food" ? 80 : 80;
   const height = type === "food" ? 80 : 100;
   
+  const animationClass = type === "food" ? "animate-float" : "animate-spin-slow";
+
   return (
     <div
-      className="absolute"
+      className={`absolute pointer-events-none ${animationClass}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
