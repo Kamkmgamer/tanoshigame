@@ -199,7 +199,8 @@ export function Game() {
           .filter((item) => item.y < (containerHeightRef.current || 600));
 
         // Collision detection
-        const hamsterRect = { x: hamsterXRef.current, y: hamsterY, width: 100, height: 100 };
+        // Smaller hit-box to better match actual sprite dimensions
+        const hamsterRect = { x: hamsterXRef.current + 10, y: hamsterY + 10, width: 80, height: 80 };
         const collidedItemIds = new Set<number>();
 
         for (const item of newItems) {
