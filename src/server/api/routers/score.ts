@@ -1,11 +1,15 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  rateLimitedProcedure,
+} from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { scores } from "~/server/db/schema";
 import { desc } from "drizzle-orm";
 
 export const scoreRouter = createTRPCRouter({
-  submit: publicProcedure
+  submit: rateLimitedProcedure
     .input(
       z.object({
         playerName: z.string().min(1).max(256),

@@ -1,10 +1,12 @@
 import "~/styles/globals.css";
 
+import { ClerkProvider } from "~/app/_providers/ClerkProvider";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { FlowerBG } from "./_components/FlowerBG";
+import { UserButton } from "./_components/UserButton";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -21,13 +23,18 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body className="relative">
-        <FlowerBG />
-        <div className="relative z-10">
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-        </div>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${geist.variable}`}>
+        <body className="relative">
+          <FlowerBG />
+          <div className="relative z-10">
+            <header className="absolute top-4 right-4">
+              <UserButton />
+            </header>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </div>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

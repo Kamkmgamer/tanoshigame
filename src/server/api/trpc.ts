@@ -8,6 +8,9 @@
  */
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
+import { TRPCError } from "@trpc/server";
+import { createRateLimiter } from "~/lib/rate-limiter";
+import { createRoleCache } from "~/lib/role-cache";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
@@ -97,6 +100,47 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 /**
+ * ---------------------
+ *  Custom Middlewares
+ * ---------------------
+ */
+
+// Simple IP-based rate limiter (100 requests per minute)
+const rateLimiter = createRateLimiter({ limit: 100, windowMs: 60_000 });
+
+const rateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
+  // Fallback to "global" if we can't identify the caller
+  const ip =
+    ctx.headers.get("x-real-ip") ?? ctx.headers.get("x-forwarded-for") ?? "global";
+  if (!rateLimiter.consume(ip)) {
+    throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+  }
+  return next();
+});
+
+// Role cache backed by in-memory Map; swap in Redis later if needed
+const roleCache = createRoleCache<string, string>({
+  ttlMs: 5 * 60 * 1000,
+  loader: async (userId) => {
+    // TODO: Replace with actual DB call to fetch roles
+    return [];
+  },
+});
+
+const requireRoles = (required: string[]) =>
+  t.middleware(async ({ ctx, next }) => {
+    const userId = ctx.headers.get("x-user-id");
+    if (!userId) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    const roles = await roleCache.get(userId);
+    if (!required.some((r) => roles.includes(r))) {
+      throw new TRPCError({ code: "FORBIDDEN" });
+    }
+    return next();
+  });
+
+/**
  * Public (unauthenticated) procedure
  *
  * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
@@ -104,3 +148,10 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+// Rate-limited variant of the public procedure
+export const rateLimitedProcedure = publicProcedure.use(rateLimitMiddleware);
+
+// Factory to create role-protected procedures
+export const requireRolesProcedure = (roles: string[]) =>
+  publicProcedure.use(requireRoles(roles));
