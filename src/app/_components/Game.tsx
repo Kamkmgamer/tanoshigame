@@ -5,6 +5,8 @@ import { api } from "~/trpc/react";
 import { Hamster } from "./Hamster";
 import { Food } from "./Food";
 import { Leaderboard } from "./Leaderboard";
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 declare global {
   // Extend window for Safari prefix without using `any`
@@ -22,13 +24,14 @@ type FallingItem = {
 };
 
 export function Game() {
+  const { isSignedIn } = useUser();
+
   // Game state
   const [gameState, setGameState] = useState<"idle" | "playing" | "paused" | "gameOver">("idle");
   const scoreRef = useRef(0);
   const livesRef = useRef(3);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
-  const [playerName, setPlayerName] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
   
   const [, forceRender] = useState(0);
@@ -294,7 +297,7 @@ export function Game() {
   };
 
   const handleSubmit = () => {
-    submitScore.mutate({ playerName, score });
+    submitScore.mutate({ score });
   };
 
   const handlePlayAgain = () => {
@@ -303,7 +306,6 @@ export function Game() {
     livesRef.current = 3;
     setScore(0);
     setLives(3);
-    setPlayerName("");
     setFallingItems([]);
   };
 
@@ -406,22 +408,24 @@ export function Game() {
           <p className="text-3xl font-bold mb-2">Game Over!</p>
           <p className="text-2xl mb-6">Final Score: {score}</p>
           
-          <div className="mb-6 w-full max-w-md">
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              className="border border-gray-300 rounded-md px-4 py-2 mr-2 text-lg w-full mb-2"
-            />
-            <button
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md text-lg w-full"
-              onClick={handleSubmit}
-              disabled={submitScore.isPending || playerName.trim() === ""}
-            >
-              {submitScore.isPending ? "Submitting..." : "Submit Score"}
-            </button>
-            {submitScore.isSuccess && <p className="text-green-500 mt-2 text-center">Score submitted successfully!</p>}
+          <div className="mb-6 w-full max-w-md text-center">
+            {isSignedIn ? (
+              <>
+                <button
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md text-lg w-full"
+                  onClick={handleSubmit}
+                  disabled={submitScore.isPending}
+                >
+                  {submitScore.isPending ? "Submitting..." : "Submit Score"}
+                </button>
+                {submitScore.isSuccess && <p className="text-green-500 mt-2">Score submitted successfully!</p>}
+                {submitScore.isError && <p className="text-red-500 mt-2">Failed to submit score.</p>}
+              </>
+            ) : (
+              <p className="text-lg">
+                <Link href="/sign-in" className="text-blue-500 underline">Sign in</Link> to save your score!
+              </p>
+            )}
           </div>
           
           <button

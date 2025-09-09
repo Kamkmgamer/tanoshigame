@@ -13,11 +13,13 @@ export const FlowerBG = () => {
   return (
     <div className="fixed inset-0 overflow-hidden select-none pointer-events-none -z-10">
       {LEFT_POSITIONS.map((left, idx) => (
-        <img
+        <Image
           key={idx}
           src={FLOWER_URL}
           alt="Flower"
-          className="absolute w-[250px] h-[250px] opacity-60 fall-flower select-none pointer-events-none"
+          width={250}
+          height={250}
+          className="absolute opacity-60 fall-flower select-none pointer-events-none"
           style={{
             left,
             animationDelay: `${idx * 5}s`,

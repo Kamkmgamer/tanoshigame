@@ -2,24 +2,43 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
-  rateLimitedProcedure,
+  protectedProcedure,
 } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { scores } from "~/server/db/schema";
 import { desc } from "drizzle-orm";
+import { clerkClient } from "@clerk/nextjs/server";
+import { TRPCError } from "@trpc/server";
 
 export const scoreRouter = createTRPCRouter({
-  submit: rateLimitedProcedure
+  submit: protectedProcedure
     .input(
       z.object({
-        playerName: z.string().min(1).max(256),
         score: z.number().int().nonnegative(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.auth.sessionId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+      const { users } = await clerkClient();
+      const user = await users.getUser(ctx.auth.userId);
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const playerName = user.username ?? `user_${user.id.slice(-4)}`;
+
       const [inserted] = await db
         .insert(scores)
-        .values({ playerName: input.playerName, score: input.score })
+        .values({ playerName, score: input.score })
         .returning();
       return inserted;
     }),
