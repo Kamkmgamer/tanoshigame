@@ -310,24 +310,36 @@ export function Game() {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 bg-white/50 backdrop-blur-md rounded-3xl shadow-2xl ring-1 ring-black/10 w-full max-w-4xl">
-      <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-amber-700 drop-shadow-lg tracking-wide">Tanoshi Game</h2>
-      
+    <div className="flex flex-col items-center p-4 sm:p-6 bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl ring-1 ring-black/10 w-full max-w-5xl">
+      <h2 className="text-4xl md:text-6xl font-extrabold mb-4 text-amber-800 drop-shadow-lg tracking-wider">
+        Tanoshi Game
+      </h2>
+
       {/* Game stats */}
       {(gameState === "playing" || gameState === "paused") && (
-        <div className="flex items-center justify-between w-full max-w-2xl mb-4 gap-3 bg-white/40 backdrop-blur-sm px-4 py-2 rounded-full shadow">
-          <div className="text-2xl font-extrabold text-emerald-800">🍪 {score}</div>
-          <div className="text-2xl font-extrabold text-red-600">{lives > 0 ? "❤️".repeat(lives) : "💔"}</div>
+        <div className="flex items-center justify-between w-full max-w-2xl mb-4 gap-3 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
+          <div className="text-2xl sm:text-3xl font-extrabold text-emerald-800 transition-colors duration-300">
+            🍪 {score}
+          </div>
+          <div
+            className={`text-2xl sm:text-3xl font-extrabold text-red-600 transition-transform duration-300 ${
+              lives < livesRef.current ? "animate-pulse" : ""
+            }`}
+          >
+            {lives > 0 ? "❤️".repeat(lives) : "💔"}
+          </div>
           <div className="flex items-center gap-2">
             <button
-              className="px-4 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow hover:from-amber-600 hover:to-amber-700 transition"
-              onClick={() => setGameState(gameState === "playing" ? "paused" : "playing")}
+              className="px-4 py-2 rounded-full text-md font-semibold bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md hover:from-amber-600 hover:to-amber-700 transition-all transform hover:scale-105"
+              onClick={() =>
+                setGameState(gameState === "playing" ? "paused" : "playing")
+              }
             >
               {gameState === "playing" ? "Pause" : "Resume"}
             </button>
             <button
               aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
-              className="px-4 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow hover:from-emerald-600 hover:to-emerald-700 transition"
+              className="px-4 py-2 rounded-full text-md font-semibold bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all transform hover:scale-105"
               onClick={() => setSoundEnabled((s) => !s)}
             >
               {soundEnabled ? "🔊" : "🔇"}
@@ -337,104 +349,132 @@ export function Game() {
       )}
 
       {gameState === "idle" && (
-        <div className="flex flex-col items-center">
-          <div className="mb-6 text-center">
-            <p className="text-lg mb-2">Help the hamster catch food and avoid jalapeños!</p>
-            <p className="text-md mb-4">Use ← → arrow keys or A/D to move, or drag/tap on mobile</p>
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-6">
+            <p className="text-xl mb-2 text-gray-700">
+              Help the hamster catch delicious cookies!
+            </p>
+            <p className="text-lg mb-4 text-gray-600">
+              Use ← → arrow keys or A/D to move, or drag/tap on mobile.
+            </p>
           </div>
           <button
-            className="bg-gradient-to-r from-emerald-400 to-emerald-600 hover:to-emerald-700 text-white font-bold py-4 px-10 rounded-full text-2xl shadow-lg transform transition hover:scale-110"
+            className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold py-4 px-12 rounded-full text-3xl shadow-xl transform transition hover:scale-110"
             onClick={handleStartGame}
           >
             Start Game
           </button>
-          
+
           <div className="mt-8 w-full">
             <Leaderboard />
           </div>
         </div>
       )}
 
-          
-
       {(gameState === "playing" || gameState === "paused") && (
-          <div
-            ref={gameAreaRef}
-            className="game-area relative w-full max-w-4xl aspect-[3/4] sm:aspect-video bg-gradient-to-b from-sky-300 to-sky-400 rounded-xl shadow-inner overflow-hidden"
-          >
-                        <Hamster x={hamsterX} y={hamsterY} dir={hamsterDir} />
-            {fallingItems.map((item) => (
-              <Food
-                key={item.id}
-                x={item.x}
-                y={item.y}
-                type={item.type}
-              />
-            ))}
+        <div
+          ref={gameAreaRef}
+          className="game-area relative w-full max-w-5xl aspect-[3/4] sm:aspect-video bg-gradient-to-b from-sky-400 to-sky-600 rounded-2xl shadow-inner overflow-hidden border-4 border-white/80"
+        >
+          <Hamster
+            x={hamsterX}
+            y={hamsterY}
+            dir={hamsterDir}
+            className="animate-wiggle"
+          />
+          {fallingItems.map((item) => (
+            <Food
+              key={item.id}
+              x={item.x}
+              y={item.y}
+              type={item.type}
+              className="animate-float"
+            />
+          ))}
 
-            {/* Mobile on-screen controls */}
-            {gameState === "playing" && (
-              <div className="absolute bottom-0 left-0 w-full h-20 flex md:hidden select-none">
-                <button
-                  className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
-                  onPointerDown={() => (holdDirRef.current = "left")}
-                  onPointerUp={() => (holdDirRef.current = "none")}
-                  onPointerCancel={() => (holdDirRef.current = "none")}
-                  onPointerLeave={() => (holdDirRef.current = "none")}
-                >
-                  ◀
-                </button>
-                <button
-                  className="flex-1 bg-white/40 active:bg-white/60 backdrop-blur-sm text-4xl font-extrabold text-slate-800 shadow-inner transition"
-                  onPointerDown={() => (holdDirRef.current = "right")}
-                  onPointerUp={() => (holdDirRef.current = "none")}
-                  onPointerCancel={() => (holdDirRef.current = "none")}
-                  onPointerLeave={() => (holdDirRef.current = "none")}
-                >
-                  ▶
-                </button>
+          {/* Mobile on-screen controls */}
+          {gameState === "playing" && (
+            <div className="absolute bottom-0 left-0 w-full h-24 flex md:hidden select-none">
+              <button
+                className="flex-1 bg-white/30 active:bg-white/50 backdrop-blur-sm text-5xl font-extrabold text-slate-100 shadow-inner transition-colors"
+                onPointerDown={() => (holdDirRef.current = "left")}
+                onPointerUp={() => (holdDirRef.current = "none")}
+                onPointerCancel={() => (holdDirRef.current = "none")}
+                onPointerLeave={() => (holdDirRef.current = "none")}
+              >
+                ◀
+              </button>
+              <button
+                className="flex-1 bg-white/30 active:bg-white/50 backdrop-blur-sm text-5xl font-extrabold text-slate-100 shadow-inner transition-colors"
+                onPointerDown={() => (holdDirRef.current = "right")}
+                onPointerUp={() => (holdDirRef.current = "none")}
+                onPointerCancel={() => (holdDirRef.current = "none")}
+                onPointerLeave={() => (holdDirRef.current = "none")}
+              >
+                ▶
+              </button>
+            </div>
+          )}
+          {gameState === "paused" && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center">
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl px-12 py-8 shadow-2xl text-4xl font-extrabold text-gray-800">
+                Paused
               </div>
-            )}
-            {gameState === "paused" && (
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-white/70 backdrop-blur-md rounded-2xl px-8 py-6 shadow-2xl text-2xl font-extrabold">Paused</div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
       )}
 
       {gameState === "gameOver" && (
-        <div className="flex flex-col items-center">
-          <p className="text-3xl font-bold mb-2">Game Over!</p>
-          <p className="text-2xl mb-6">Final Score: {score}</p>
-          
-          <div className="mb-6 w-full max-w-md text-center">
+        <div className="flex flex-col items-center text-center">
+          <p className="text-5xl font-bold mb-2 text-red-600 drop-shadow-lg">
+            Game Over!
+          </p>
+          <p className="text-4xl mb-6 font-semibold">Final Score: {score}</p>
+
+          <div className="mb-6 w-full max-w-md">
             {isSignedIn ? (
               <>
                 <button
-                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md text-lg w-full"
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-lg text-xl w-full shadow-lg transition-transform transform hover:scale-105"
                   onClick={handleSubmit}
                   disabled={submitScore.isPending}
                 >
-                  {submitScore.isPending ? "Submitting..." : "Submit Score"}
+                  {submitScore.isPending
+                    ? "Submitting..."
+                    : "Submit Score"}
                 </button>
-                {submitScore.isSuccess && <p className="text-green-500 mt-2">Score submitted successfully!</p>}
-                {submitScore.isError && <p className="text-red-500 mt-2">Failed to submit score.</p>}
+                {submitScore.isSuccess && (
+                  <p className="text-green-600 mt-2 font-semibold">
+                    Score submitted successfully!
+                  </p>
+                )}
+                {submitScore.isError && (
+                  <p className="text-red-600 mt-2 font-semibold">
+                    Failed to submit score.
+                  </p>
+                )}
               </>
             ) : (
-              <p className="text-lg">
-                <Link href="/sign-in" className="text-blue-500 underline">Sign in</Link> to save your score!
+              <p className="text-lg text-gray-700">
+                <Link
+                  href="/sign-in"
+                  className="text-blue-600 hover:text-blue-800 underline font-semibold"
+                >
+                  Sign in
+                </Link>{" "}
+                to save your score!
               </p>
             )}
           </div>
-          
+
           <button
-            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-full text-lg"
+            className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 px-8 rounded-full text-xl shadow-md transition-transform transform hover:scale-105"
             onClick={handlePlayAgain}
           >
             Play Again
           </button>
-          
+
           <div className="mt-8 w-full">
             <Leaderboard />
           </div>

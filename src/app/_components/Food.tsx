@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 
-export const Food = ({ x, y, type }: { x: number; y: number; type: "food" | "jalapeno" }) => {
+export const Food = ({ x, y, type, className }: { x: number; y: number; type: "food" | "jalapeno", className?: string }) => {
   // Placeholder images - replace with actual UploadThing URLs
   const foodImageUrl = "https://x8cti9ppp0.ufs.sh/f/fR4eWtZ8tDgyGnyTumgnhB7mSzbeZCufltU9FYIRpk6NHvMj";
   const jalapenoImageUrl = "https://x8cti9ppp0.ufs.sh/f/fR4eWtZ8tDgy1ilvvE6jSqRGa8nE9WPuA6FJ7LH35prdgoI0";
@@ -14,7 +14,7 @@ export const Food = ({ x, y, type }: { x: number; y: number; type: "food" | "jal
 
   return (
     <div
-      className={`absolute pointer-events-none z-10 ${animationClass}`}
+      className={`absolute pointer-events-none z-10 ${animationClass} ${className}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,

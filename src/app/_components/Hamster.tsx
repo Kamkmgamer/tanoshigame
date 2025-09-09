@@ -5,15 +5,16 @@ type HamsterProps = {
   x: number;
   y: number;
   dir?: "left" | "right" | "none";
+  className?: string;
 };
 
-export const Hamster = ({ x, y, dir = "none" }: HamsterProps) => {
+export const Hamster = ({ x, y, dir = "none", className }: HamsterProps) => {
   // Placeholder image - replace with actual UploadThing URL
   const hamsterImageUrl = "https://x8cti9ppp0.ufs.sh/f/fR4eWtZ8tDgy1iqQXu9jSqRGa8nE9WPuA6FJ7LH35prdgoI0";
   
   return (
     <div
-      className="absolute animate-wiggle transition-transform z-10"
+      className={`absolute transition-transform z-10 ${className}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
