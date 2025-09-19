@@ -9,7 +9,13 @@ interface ClerkProviderProps extends PropsWithChildren {
 
 export function ClerkProvider({ children, publishableKey }: ClerkProviderProps) {
   return (
-    <ClerkProviderComponent publishableKey={publishableKey}>
+    <ClerkProviderComponent
+      publishableKey={publishableKey}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
+    >
       {children}
     </ClerkProviderComponent>
   );

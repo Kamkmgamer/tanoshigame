@@ -7,7 +7,7 @@ import {
 import { db } from "~/server/db";
 import { scores } from "~/server/db/schema";
 import { desc } from "drizzle-orm";
-import { clerkClient } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { TRPCError } from "@trpc/server";
 
 export const scoreRouter = createTRPCRouter({
@@ -18,14 +18,13 @@ export const scoreRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.auth.sessionId) {
+      if (!ctx.auth.userId) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "User not authenticated",
         });
       }
-      const { users } = await clerkClient();
-      const user = await users.getUser(ctx.auth.userId);
+      const user = await currentUser();
 
       if (!user) {
         throw new TRPCError({

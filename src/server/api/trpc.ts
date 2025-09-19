@@ -132,7 +132,7 @@ export const rateLimitedProcedure = publicProcedure.use(rateLimitMiddleware);
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
-    if (!ctx.auth.sessionId) { // Changed userId to sessionId
+    if (!ctx.auth.userId) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     return next({
