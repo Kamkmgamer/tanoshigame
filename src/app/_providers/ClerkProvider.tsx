@@ -3,9 +3,13 @@
 import { ClerkProvider as ClerkProviderComponent } from "@clerk/nextjs";
 import { type PropsWithChildren } from "react";
 
-export function ClerkProvider({ children }: PropsWithChildren) {
+interface ClerkProviderProps extends PropsWithChildren {
+  publishableKey: string;
+}
+
+export function ClerkProvider({ children, publishableKey }: ClerkProviderProps) {
   return (
-    <ClerkProviderComponent>
+    <ClerkProviderComponent publishableKey={publishableKey}>
       {children}
     </ClerkProviderComponent>
   );
