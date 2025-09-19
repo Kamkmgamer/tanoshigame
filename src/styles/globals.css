@@ -23,10 +23,10 @@ body {
     transform: translateX(0) translateY(-120vh) rotate(0deg);
   }
   50% {
-    transform: translateX(30px) translateY(-40vh) rotate(15deg);
+    transform: translateX(30px) translateY(-40vh) rotate(180deg);
   }
   100% {
-    transform: translateX(-40px) translateY(120vh) rotate(45deg);
+    transform: translateX(-40px) translateY(120vh) rotate(360deg);
   }
 }
 .fall-flower {

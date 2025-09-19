@@ -11,18 +11,19 @@ const LEFT_POSITIONS = ["10%", "50%", "80%"] as const;
 
 export const FlowerBG = () => {
   return (
-    <div className="fixed inset-0 overflow-hidden select-none pointer-events-none -z-10">
+    <div className="fixed inset-0 overflow-hidden select-none pointer-events-none z-0">
       {LEFT_POSITIONS.map((left, idx) => (
         <Image
           key={idx}
           src={FLOWER_URL}
           alt="Flower"
-          width={250}
-          height={250}
+          width={750}
+          height={750}
           className="absolute opacity-60 fall-flower select-none pointer-events-none"
           style={{
             left,
             animationDelay: `${idx * 5}s`,
+            animationDuration: `${16 + idx * 4}s`,
           }}
         />
       ))}
