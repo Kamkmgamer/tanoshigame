@@ -28,6 +28,13 @@ export default function RootLayout({
       <html lang="en" className={`${geist.variable}`}>
         <body className="relative">
           <FlowerBG />
+          <audio
+            src="https://x8cti9ppp0.ufs.sh/f/fR4eWtZ8tDgy6zkQQUqftzpgsLlmKwU2SridI5YX3u0aCJPR"
+            autoPlay
+            loop
+            muted
+            className="hidden"
+          />
           <div className="relative z-10">
             <header className="absolute top-4 right-4">
               <UserButton />
