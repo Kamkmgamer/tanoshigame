@@ -1,7 +1,6 @@
 import "~/styles/globals.css";
 
-import { ClerkProvider } from "~/app/_providers/ClerkProvider";
-import { env } from "~/env";
+import { ClerkProvider } from "@clerk/nextjs";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
@@ -24,7 +23,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider publishableKey={env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider>
       <html lang="en" className={`${geist.variable}`}>
         <body className="relative">
           <FlowerBG />

@@ -1,30 +1,9 @@
-import { SignUp, ClerkLoaded, ClerkLoading, AuthenticateWithRedirectCallback } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ rest?: string[] }>;
-}) {
-  // Check if this is an SSO callback route
-  const { rest } = await params;
-  const isSSOCallback = rest?.[0] === "sso-callback";
-
-  if (isSSOCallback) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <ClerkLoaded>
-          <AuthenticateWithRedirectCallback />
-        </ClerkLoaded>
-        <ClerkLoading>
-          <p>Completing sign up...</p>
-        </ClerkLoading>
-      </div>
-    );
-  }
-
+export default function SignUpPage() {
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <SignUp path="/sign-up" afterSignUpUrl="/" afterSignInUrl="/" />
-    </div>
+    <main className="mx-auto flex min-h-[60vh] max-w-5xl items-center justify-center px-4 py-16">
+      <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
+    </main>
   );
 }
