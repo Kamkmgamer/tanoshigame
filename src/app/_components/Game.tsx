@@ -394,7 +394,7 @@ export function Game() {
 
           {/* Mobile on-screen controls */}
           {gameState === "playing" && (
-            <div className="absolute bottom-0 left-0 w-full h-24 flex md:hidden select-none">
+            <div className="absolute bottom-0 left-0 w-full h-24 hidden select-none">
               <button
                 className="flex-1 bg-white/30 active:bg-white/50 backdrop-blur-sm text-5xl font-extrabold text-slate-100 shadow-inner transition-colors"
                 onPointerDown={() => (holdDirRef.current = "left")}
